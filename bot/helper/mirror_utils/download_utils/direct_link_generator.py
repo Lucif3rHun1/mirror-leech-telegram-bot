@@ -11,11 +11,11 @@ from hashlib import sha256
 from http.cookiejar import MozillaCookieJar
 from json import loads
 from os import path
-from re import findall, match, search
 from time import sleep
 from urllib.parse import parse_qs, urlparse
 from uuid import uuid4
 import tls_client
+import re
 
 from cloudscraper import create_scraper
 from lk21 import Bypass
