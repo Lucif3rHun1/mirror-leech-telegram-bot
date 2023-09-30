@@ -32,6 +32,7 @@ requests
 telegraph
 tenacity
 tgcrypto
+tls_client
 uvloop
 xattr
 yt-dlp
