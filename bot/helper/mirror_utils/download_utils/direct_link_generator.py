@@ -15,6 +15,7 @@ from re import findall, match, search
 from time import sleep
 from urllib.parse import parse_qs, urlparse
 from uuid import uuid4
+import tls_client
 
 from cloudscraper import create_scraper
 from lk21 import Bypass
@@ -42,6 +43,8 @@ def direct_link_generator(link):
         raise DirectDownloadLinkException("ERROR: Use ytdl cmds for Youtube links")
     elif 'mediafire.com' in domain:
         return mediafire(link)
+    elif 'userscloud.com' in domain:
+        return usercloud(link)
     elif 'osdn.net' in domain:
         return osdn(link)
     elif 'github.com' in domain:
@@ -128,6 +131,37 @@ def get_captcha_token(session, params):
     if token := findall(r'"rresp","(.*?)"', res.text):
         return token[0]
 
+def usercloud(url):
+  retry_delay = 1
+  match = re.search(r'https://userscloud.com/([a-zA-Z0-9]+)', url)
+  file_id = match.group(1)
+  post_url = f"https://userscloud.com/{file_id}"
+  payload = {
+    'op': 'download2',
+    'id': file_id,
+    'rand': '',
+    'referer': '',
+    'method_free': '',
+    'method_premium': '',
+    'down_script': 1,
+  }
+
+  while True:
+      try:
+        session = tls_client.Session(
+            client_identifier="chrome112",
+            random_tls_extension_order=True
+        )
+        response = session.post(post_url, data=payload, allow_redirects=False)
+        if 'Location' in response.headers:
+            download_link = response.headers['Location']
+            return download_link
+            break  # Successful response, exit the loop
+        else:
+            print("Failed to retrieve the download link.")
+    
+      except tls_client.exceptions.TLSClientExeption as e:
+          time.sleep(retry_delay)
 
 def mediafire(url, session=None):
     if '/folder/' in url:
